@@ -1,12 +1,22 @@
-﻿namespace Devices.API.Core;
+﻿using System.Text.Json.Serialization;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
-internal abstract class Device
+namespace Devices.API.Core;
+
+public abstract class Device
 {
-    //TODO decide type of keys: Ulid?
-    public Guid Id { get; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; init; }
 }
 
-internal sealed class Sensor : Device
+public sealed class Sensor : Device
 {
-    
+    public string Name { get; private set; }
+
+    public Sensor(string name)
+    {
+        Name = name;
+    }
 }
