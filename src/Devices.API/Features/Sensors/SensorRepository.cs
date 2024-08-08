@@ -13,7 +13,6 @@ internal sealed class SensorRepository : ISensorRepository
     public SensorRepository(IMongoClient mongoClient, IOptions<DevicesDatabaseSettings> options)
     {
         var database = mongoClient.GetDatabase(options.Value.DatabaseName);
-        
         _sensorsCollection = database.GetCollection<Sensor>(options.Value.SensorsCollectionName);
     }
     
