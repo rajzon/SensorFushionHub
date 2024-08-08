@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace Devices.API.Features.CreateSensor;
+namespace Devices.API.Features.Sensors.CreateSensor;
 
 public interface ISensorRepository
 {
