@@ -3,22 +3,21 @@ using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 
 namespace Devices.API.Features.Sensors;
 
 public sealed class SensorEndpoints : ICarterModule
 {
-    private const string BASE_URL = "api/sensors";
+    private const string BaseUrl = "api/sensors";
     
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup(BASE_URL).WithTags(nameof(SensorEndpoints));
+        var group = app.MapGroup(BaseUrl).WithTags(nameof(SensorEndpoints));
         group.MapPost("/", async ([FromBody] CreateSensorCommand command, [FromServices] IMediator mediator) =>
         {
             var result = await mediator.Send(command);
             
-            return Results.Created($"{BASE_URL}/{result.Id}", result);
+            return Results.Created($"{BaseUrl}/{result.Id}", result);
         }).WithOpenApi();
         
         group.MapGet("/", async ([FromServices] ISensorRepository sensorRepository) =>
