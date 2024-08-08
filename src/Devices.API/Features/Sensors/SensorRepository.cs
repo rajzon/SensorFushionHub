@@ -10,12 +10,11 @@ internal sealed class SensorRepository : ISensorRepository
 {
     private readonly IMongoCollection<Sensor> _sensorsCollection;
     
-    public SensorRepository(IOptions<DevicesDatabaseSettings> devicesDatabaseSettings)
+    public SensorRepository(IMongoClient mongoClient, IOptions<DevicesDatabaseSettings> options)
     {
-        var mongoClient = new MongoClient(devicesDatabaseSettings.Value.ConnectionString);
-        var database = mongoClient.GetDatabase(devicesDatabaseSettings.Value.DatabaseName);
+        var database = mongoClient.GetDatabase(options.Value.DatabaseName);
         
-        _sensorsCollection = database.GetCollection<Sensor>(devicesDatabaseSettings.Value.SensorsCollectionName);
+        _sensorsCollection = database.GetCollection<Sensor>(options.Value.SensorsCollectionName);
     }
     
     public Task CreateAsync(Sensor sensor) =>

@@ -3,10 +3,11 @@ using Carter;
 using Devices.API.Core;
 using Devices.API.Features.Sensors;
 using Devices.API.Features.Sensors.Abstract;
-using Devices.API.Features.Sensors.CreateSensor;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Infrastructure;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 namespace Devices.API;
 
@@ -29,6 +30,11 @@ public class Program
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
         builder.Services.Configure<DevicesDatabaseSettings>(
             builder.Configuration.GetSection("DevicesDatabase"));
+        builder.Services.AddSingleton<IMongoClient>(sp =>
+        {
+            var settings = sp.GetService<IOptions<DevicesDatabaseSettings>>();
+            return new MongoClient(settings!.Value.ConnectionString);
+        });
         builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
 
         var app = builder.Build();
