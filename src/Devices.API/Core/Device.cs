@@ -10,13 +10,3 @@ public abstract class Device
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; init; }
 }
-
-public sealed class Sensor : Device
-{
-    public string Name { get; private set; }
-
-    public Sensor(string name)
-    {
-        Name = name;
-    }
-}
