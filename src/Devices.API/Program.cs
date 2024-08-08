@@ -1,7 +1,11 @@
 using System.Text.Json.Serialization;
 using Carter;
 using Devices.API.Core;
+using Devices.API.Features.Sensors;
+using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor;
+using Devices.API.Features.Sensors.CreateSensor.Models;
+using Devices.API.Infrastructure;
 using Microsoft.OpenApi.Models;
 
 namespace Devices.API;
@@ -22,7 +26,7 @@ public class Program
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
         builder.Services.AddCarter();
-        
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
         builder.Services.Configure<DevicesDatabaseSettings>(
             builder.Configuration.GetSection("DevicesDatabase"));
         builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
@@ -43,6 +47,8 @@ public class Program
 }
 
 [JsonSerializable(typeof(List<Sensor>))]
+[JsonSerializable(typeof(CreateSensorCommand))]
+[JsonSerializable(typeof(SensorDto))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

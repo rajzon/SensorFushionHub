@@ -1,3 +1,5 @@
-﻿namespace Devices.API.Features.Sensors.CreateSensor.Models;
+﻿using MediatR;
 
-internal sealed record CreateSensorCommand();
+namespace Devices.API.Features.Sensors.CreateSensor.Models;
+
+public sealed record CreateSensorCommand(string Name) : IRequest<SensorDto>;

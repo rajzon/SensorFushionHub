@@ -1,14 +1,10 @@
 ﻿using Devices.API.Core;
+using Devices.API.Features.Sensors.Abstract;
+using Devices.API.Infrastructure;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace Devices.API.Features.Sensors.CreateSensor;
-
-public interface ISensorRepository
-{
-    Task CreateAsync(Sensor sensor);
-    Task<List<Sensor>> GetAllAsync();
-}
+namespace Devices.API.Features.Sensors;
 
 internal sealed class SensorRepository : ISensorRepository
 {
@@ -27,13 +23,7 @@ internal sealed class SensorRepository : ISensorRepository
     
     public Task<List<Sensor>> GetAllAsync() =>
         _sensorsCollection.Find(_ => true).ToListAsync();
-}
-
-internal sealed class DevicesDatabaseSettings
-{
-    public string ConnectionString { get; set; } = null!;
-
-    public string DatabaseName { get; set; } = null!;
-
-    public string SensorsCollectionName { get; set; } = null!;
+    
+    public Task<Sensor> GetAsync(string id) =>
+        _sensorsCollection.Find(s => s.Id == id).FirstOrDefaultAsync();
 }
