@@ -6,5 +6,5 @@ public interface ISensorRepository
 {
     Task CreateAsync(Sensor sensor);
     Task<List<Sensor>> GetAllAsync();
-    Task<Sensor> GetAsync(string id);
+    Task<Sensor?> GetAsync(string id);
 }

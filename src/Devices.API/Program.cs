@@ -1,10 +1,11 @@
 using System.Text.Json.Serialization;
 using Carter;
-using Devices.API.Core;
 using Devices.API.Features.Sensors;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
+using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
+using FluentResults;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
@@ -52,9 +53,11 @@ public class Program
     }
 }
 
-[JsonSerializable(typeof(List<Sensor>))]
+[JsonSerializable(typeof(List<SensorDto>))]
 [JsonSerializable(typeof(CreateSensorCommand))]
+[JsonSerializable(typeof(CreatedSensorDto))]
 [JsonSerializable(typeof(SensorDto))]
+[JsonSerializable(typeof(List<IError>))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }
