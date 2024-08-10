@@ -1,4 +1,5 @@
-﻿using Carter;
+﻿using System.Net;
+using Carter;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Features.Sensors.GetSensors.Models;
@@ -18,15 +19,18 @@ public sealed class SensorEndpoints : ICarterModule
         group.MapPost("/", async ([FromBody] CreateSensorCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
-            return ApiUtilities.HandleResult(result, createdStatusRoute: $"{BaseUrl}/{result.Value?.Id}");
-        }).WithOpenApi();
+            return ApiUtilities.HandleResult(result, createdRoute: $"{BaseUrl}/{result.Value?.Id}");
+        }).WithOpenApi()
+            .Produces<CreatedSensorDto>((int)HttpStatusCode.Created);
         
         group.MapGet("/", async (IMediator mediator) 
             => ApiUtilities.HandleResult(await mediator.Send(new GetSensorsQuery())))
-                .WithOpenApi();
+                .WithOpenApi()
+                .Produces<List<SensorDto>>();
         
         group.MapGet("/{id}", async (string id, IMediator mediator) 
             => ApiUtilities.HandleResult( await mediator.Send(new GetSensorQuery(id))))
-                .WithOpenApi();
+                .WithOpenApi()
+                .Produces<SensorDto>();
     }
 }

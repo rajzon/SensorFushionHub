@@ -1,11 +1,13 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Carter;
+using Devices.API.Core;
 using Devices.API.Features.Sensors;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
-using FluentResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
@@ -19,6 +21,11 @@ public class Program
         var builder = WebApplication.CreateSlimBuilder(args);
 
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
+        {
+            //TODO Remove when upgraded to .NET 9 https://github.com/dotnet/aspnetcore/pull/54478#issuecomment-2007571828
+            pc.ProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? pc.HttpContext.TraceIdentifier);
+        });
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Devices.API", Version = "v1" });
@@ -57,7 +64,9 @@ public class Program
 [JsonSerializable(typeof(CreateSensorCommand))]
 [JsonSerializable(typeof(CreatedSensorDto))]
 [JsonSerializable(typeof(SensorDto))]
-[JsonSerializable(typeof(List<IError>))]
+[JsonSerializable(typeof(ProblemDetails))]
+[JsonSerializable(typeof(object[]))]
+[JsonSerializable(typeof(MoreDetailsErrorModel))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

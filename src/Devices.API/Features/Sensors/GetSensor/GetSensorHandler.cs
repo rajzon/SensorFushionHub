@@ -16,7 +16,8 @@ public sealed class GetSensorHandler(ISensorRepository sensorRepository)
         var sensor = await sensorRepository.GetAsync(request.Id);
         if (sensor is null)
         {
-            return Result.Fail(new NotFoundResultError(ErrorMessages.SensorNotFound));
+            return Result.Fail(new NotFoundResultError(ErrorMessages.SensorNotFound.ErrorMessage)
+                .WithMoreErrorDetails(ErrorMessages.SensorNotFound));
         }
         
         return Result.Ok(sensor.Adapt<SensorDto>());
