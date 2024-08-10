@@ -54,6 +54,11 @@ public class Program
             });
             app.UseSwaggerUI();
         }
+
+        if (app.Environment.IsProduction())
+        {
+            app.UseExceptionHandler("/exception");
+        }
         
         app.MapCarter();
         app.Run();

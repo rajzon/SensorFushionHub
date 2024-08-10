@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Devices.API.Features.Sensors.GetSensor;
 using FluentResults;
 
 namespace Devices.API.Infrastructure;
@@ -12,11 +11,10 @@ internal static class ApiUtilities
         {
             if (result.HasError<NotFoundResultError>())
             {
-
                 return Results.Problem(statusCode: (int)HttpStatusCode.NotFound, detail: SetDetailMessage(result), extensions: SetMoreDetails(result));
             }
                 
-            return Results.Problem( detail: SetDetailMessage(result), extensions: SetMoreDetails(result));
+            return Results.Problem(detail: SetDetailMessage(result), extensions: SetMoreDetails(result));
         }
 
         if (createdRoute is not null)
