@@ -1,6 +1,9 @@
-﻿using Carter;
-using Devices.API.Features.Sensors.Abstract;
+﻿using System.Net;
+using Carter;
 using Devices.API.Features.Sensors.CreateSensor.Models;
+using Devices.API.Features.Sensors.GetSensor.Models;
+using Devices.API.Features.Sensors.GetSensors.Models;
+using Devices.API.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,25 +16,21 @@ public sealed class SensorEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup(BaseUrl).WithTags(nameof(SensorEndpoints));
-        group.MapPost("/", async ([FromBody] CreateSensorCommand command, [FromServices] IMediator mediator) =>
+        group.MapPost("/", async ([FromBody] CreateSensorCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
-            
-            return Results.Created($"{BaseUrl}/{result.Id}", result);
-        }).WithOpenApi();
+            return ApiUtilities.HandleResult(result, createdRoute: $"{BaseUrl}/{result.Value?.Id}");
+        }).WithOpenApi()
+            .Produces<CreatedSensorDto>((int)HttpStatusCode.Created);
         
-        group.MapGet("/", async ([FromServices] ISensorRepository sensorRepository) =>
-        {
-            var sensors = await sensorRepository.GetAllAsync();
-            
-            return Results.Ok(sensors);
-        }).WithOpenApi();
+        group.MapGet("/", async (IMediator mediator) 
+            => ApiUtilities.HandleResult(await mediator.Send(new GetSensorsQuery())))
+                .WithOpenApi()
+                .Produces<List<SensorDto>>();
         
-        group.MapGet("/{id}", async (string id, [FromServices] ISensorRepository sensorRepository) =>
-        {
-            var sensor = await sensorRepository.GetAsync(id);
-            
-            return Results.Ok(sensor);
-        }).WithOpenApi();
+        group.MapGet("/{id}", async (string id, IMediator mediator) 
+            => ApiUtilities.HandleResult( await mediator.Send(new GetSensorQuery(id))))
+                .WithOpenApi()
+                .Produces<SensorDto>();
     }
 }

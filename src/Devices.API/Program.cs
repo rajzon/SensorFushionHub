@@ -1,13 +1,17 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Carter;
 using Devices.API.Core;
 using Devices.API.Features.Sensors;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
+using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using Serilog;
 
 namespace Devices.API;
 
@@ -16,8 +20,15 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateSlimBuilder(args);
-
+        builder.Host.UseSerilog((context, loggerConfig) =>
+            loggerConfig.ReadFrom.Configuration(context.Configuration));
+        
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
+        {
+            //TODO Remove when upgraded to .NET 9 https://github.com/dotnet/aspnetcore/pull/54478#issuecomment-2007571828
+            pc.ProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? pc.HttpContext.TraceIdentifier);
+        });
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Devices.API", Version = "v1" });
@@ -46,15 +57,25 @@ public class Program
             });
             app.UseSwaggerUI();
         }
-        
+
+        if (app.Environment.IsProduction())
+        {
+            app.UseExceptionHandler("/exception");
+        }
+
+        app.UseSerilogRequestLogging();
         app.MapCarter();
         app.Run();
     }
 }
 
-[JsonSerializable(typeof(List<Sensor>))]
+[JsonSerializable(typeof(List<SensorDto>))]
 [JsonSerializable(typeof(CreateSensorCommand))]
+[JsonSerializable(typeof(CreatedSensorDto))]
 [JsonSerializable(typeof(SensorDto))]
+[JsonSerializable(typeof(ProblemDetails))]
+[JsonSerializable(typeof(object[]))]
+[JsonSerializable(typeof(MoreDetailsErrorModel))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

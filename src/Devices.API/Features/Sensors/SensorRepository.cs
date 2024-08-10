@@ -22,6 +22,6 @@ internal sealed class SensorRepository : ISensorRepository
     public Task<List<Sensor>> GetAllAsync() =>
         _sensorsCollection.Find(_ => true).ToListAsync();
     
-    public Task<Sensor> GetAsync(string id) =>
+    public Task<Sensor?> GetAsync(string id) =>
         _sensorsCollection.Find(s => s.Id == id).FirstOrDefaultAsync();
 }
