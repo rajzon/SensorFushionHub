@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using Serilog;
 
 namespace Devices.API;
 
@@ -19,7 +20,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateSlimBuilder(args);
-
+        builder.Host.UseSerilog((context, loggerConfig) =>
+            loggerConfig.ReadFrom.Configuration(context.Configuration));
+        
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
         {
@@ -59,7 +62,8 @@ public class Program
         {
             app.UseExceptionHandler("/exception");
         }
-        
+
+        app.UseSerilogRequestLogging();
         app.MapCarter();
         app.Run();
     }

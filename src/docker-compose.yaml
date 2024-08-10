@@ -1,0 +1,9 @@
+﻿services:
+  devices-api-dev.seq:
+    image: datalust/seq:2024.3
+    container_name: devices-api-dev-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 5341:5341
+      - 8081:80
