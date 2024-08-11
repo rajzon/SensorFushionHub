@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -24,18 +25,32 @@ public class Program
         var builder = WebApplication.CreateSlimBuilder(args);
         builder.Host.UseSerilog((context, loggerConfig) =>
             loggerConfig.ReadFrom.Configuration(context.Configuration));
-
-        var tracingOtlpEndpoint = builder.Configuration["OtelExporterOtlpEndpointUrl"];
+        
+        var otelCollectorUrl = builder.Configuration["Otel:Endpoint"];
         builder.Services.AddOpenTelemetry()
-            .ConfigureResource(resoure => resoure.AddService("Devices.API"))
+            .ConfigureResource(resource => resource.AddService("Devices.API"))
             .WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
                 //TODO add listener for RabbitMQ later
-                if (tracingOtlpEndpoint is not null)
+                if (otelCollectorUrl is not null)
                 {
-                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(tracingOtlpEndpoint));
+                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                }
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics.AddMeter("DevicesAPI")
+                    .AddMeter("Microsoft.AspNetCore.Hosting")
+                    .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+                    .AddAspNetCoreInstrumentation()
+                    .AddProcessInstrumentation()
+                    .AddRuntimeInstrumentation();
+
+                if (otelCollectorUrl is not null)
+                {
+                    metrics.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
                 }
             });
         
