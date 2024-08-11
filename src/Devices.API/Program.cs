@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 namespace Devices.API;
@@ -22,6 +24,20 @@ public class Program
         var builder = WebApplication.CreateSlimBuilder(args);
         builder.Host.UseSerilog((context, loggerConfig) =>
             loggerConfig.ReadFrom.Configuration(context.Configuration));
+
+        var tracingOtlpEndpoint = builder.Configuration["OtelExporterOtlpEndpointUrl"];
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resoure => resoure.AddService("Devices.API"))
+            .WithTracing(tracing =>
+            {
+                tracing.AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+                //TODO add listener for RabbitMQ later
+                if (tracingOtlpEndpoint is not null)
+                {
+                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(tracingOtlpEndpoint));
+                }
+            });
         
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
