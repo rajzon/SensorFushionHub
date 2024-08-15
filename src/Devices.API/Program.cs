@@ -82,6 +82,8 @@ public class Program
             return new MongoClient(settings!.Value.ConnectionString);
         });
         builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
+        builder.Services
+            .AddSingleton<ILoggableRequestTypeInfoCacheCacheAccessor, LoggableRequestTypeInfoCacheCacheAccessor>();
 
         var app = builder.Build();
         if (app.Environment.IsDevelopment())
