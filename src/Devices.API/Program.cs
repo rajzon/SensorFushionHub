@@ -7,7 +7,9 @@ using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
+using Devices.API.Infrastructure.Abstract;
 using Devices.API.Infrastructure.Telemetry;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -81,6 +83,7 @@ public class Program
             var settings = sp.GetService<IOptions<DevicesDatabaseSettings>>();
             return new MongoClient(settings!.Value.ConnectionString);
         });
+        builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
         builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
         builder.Services
             .AddSingleton<ILoggableRequestTypeInfoCacheCacheAccessor, LoggableRequestTypeInfoCacheCacheAccessor>();

@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
+using Devices.API.Infrastructure.Abstract;
 using MediatR;
 using OpenTelemetry.Trace;
 
@@ -38,14 +38,4 @@ internal sealed class ExceptionHandlerBehaviour<TRequest, TResponse>(ILogger<TRe
             throw;
         }
     }
-}
-
-public interface ILoggableRequestTypeInfoCacheCacheAccessor 
-{
-    ConcurrentDictionary<Type, LoggableRequestAttribute?> Cache { get; }
-}
-
-internal sealed class LoggableRequestTypeInfoCacheCacheAccessor : ILoggableRequestTypeInfoCacheCacheAccessor
-{
-    public ConcurrentDictionary<Type, LoggableRequestAttribute?> Cache { get; } = new();
 }
