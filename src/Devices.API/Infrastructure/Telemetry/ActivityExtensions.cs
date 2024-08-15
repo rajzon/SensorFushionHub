@@ -15,6 +15,6 @@ internal static class ActivityExtensions
 
     public static void EnrichWithRequest<TRequest>(this Activity activity)
     {
-        activity.SetTag("app_request.type", typeof(TRequest).Name);
+        activity.SetTag(DiagnosticsNames.RequestName, typeof(TRequest).Name);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using Devices.API.Infrastructure.Abstract;
+using Devices.API.Infrastructure.Telemetry;
 using MediatR;
 using OpenTelemetry.Trace;
 
@@ -33,7 +34,7 @@ internal sealed class ExceptionHandlerBehaviour<TRequest, TResponse>(ILogger<TRe
             Activity.Current?.SetStatus(ActivityStatusCode.Error);
             Activity.Current?.RecordException(ex, new TagList
             {
-                { "app_request.name", requestName}
+                { DiagnosticsNames.RequestName, requestName}
             });
             throw;
         }
