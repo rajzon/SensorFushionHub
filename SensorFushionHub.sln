@@ -7,6 +7,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B784A7E5-340
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devices.API", "src\Devices.API\Devices.API.csproj", "{F1964A58-EAD9-47CC-A165-84EEB15AA717}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{16F1B121-69AC-496B-ADDF-57C8896E21DF}"
+	ProjectSection(SolutionItems) = preProject
+		src\config\otel-collector-config.yaml = src\config\otel-collector-config.yaml
+		src\config\prometheus.yaml = src\config\prometheus.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,5 +26,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1964A58-EAD9-47CC-A165-84EEB15AA717} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
+		{16F1B121-69AC-496B-ADDF-57C8896E21DF} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
 	EndGlobalSection
 EndGlobal

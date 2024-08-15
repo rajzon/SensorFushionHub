@@ -28,8 +28,9 @@ public sealed class SensorEndpoints : ICarterModule
                 .WithOpenApi()
                 .Produces<List<SensorDto>>();
         
-        group.MapGet("/{id}", async (string id, IMediator mediator) 
-            => ApiUtilities.HandleResult( await mediator.Send(new GetSensorQuery(id))))
+        group.MapGet("/{id}", async ([AsParameters] GetSensorQuery query, IMediator mediator) 
+            => ApiUtilities.HandleResult( await mediator.Send(query)))
+                .AddEndpointFilter<ValidationFilter<GetSensorQuery>>()
                 .WithOpenApi()
                 .Produces<SensorDto>();
     }

@@ -1,6 +1,8 @@
-﻿using Devices.API.Core;
+﻿using System.Diagnostics;
+using Devices.API.Core;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
+using Devices.API.Infrastructure.Telemetry;
 using FluentResults;
 using Mapster;
 using MediatR;
@@ -11,9 +13,28 @@ public sealed class CreateSensorHandler(ISensorRepository sensorRepository) : IR
 {
     public async Task<Result<CreatedSensorDto>> Handle(CreateSensorCommand request, CancellationToken cancellationToken)
     {
+        using var activity = StartActivity(request);
+        
         var sensor = new Sensor(request.Name);
         await sensorRepository.CreateAsync(sensor);
-
+        
+        AddCreatedSensorMetrics();
         return Result.Ok(sensor.Adapt<CreatedSensorDto>());
+    }
+
+    private static Activity? StartActivity(CreateSensorCommand request)
+    {
+        return DiagnosticsConfig.Source.StartActivityWithTags(DiagnosticsNames.CreateSensorName,
+            new List<KeyValuePair<string, object?>>
+            {
+                new(DiagnosticsNames.SensorName, request.Name)
+            });
+    }
+    
+    
+    private static void AddCreatedSensorMetrics()
+    {
+        DiagnosticsConfig.CreatedSensors.Record(1);
+        DiagnosticsConfig.CreatedSensorsCount.Add(1);
     }
 }

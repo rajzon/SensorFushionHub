@@ -7,10 +7,17 @@ using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
+using Devices.API.Infrastructure.Abstract;
+using Devices.API.Infrastructure.Telemetry;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 namespace Devices.API;
@@ -22,6 +29,35 @@ public class Program
         var builder = WebApplication.CreateSlimBuilder(args);
         builder.Host.UseSerilog((context, loggerConfig) =>
             loggerConfig.ReadFrom.Configuration(context.Configuration));
+        
+        var otelCollectorUrl = builder.Configuration["Otel:Endpoint"];
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService("Devices.API"))
+            .WithTracing(tracing =>
+            {
+                tracing.AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddSource(DiagnosticsConfig.Source.Name);
+                //TODO add listener for RabbitMQ later
+                if (otelCollectorUrl is not null)
+                {
+                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                }
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics.AddMeter(DiagnosticsConfig.Meter.Name)
+                    .AddMeter("Microsoft.AspNetCore.Hosting")
+                    .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+                    .AddAspNetCoreInstrumentation()
+                    .AddProcessInstrumentation()
+                    .AddRuntimeInstrumentation();
+
+                if (otelCollectorUrl is not null)
+                {
+                    metrics.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                }
+            });
         
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
@@ -39,6 +75,7 @@ public class Program
         });
         builder.Services.AddCarter();
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlerBehaviour<,>));
         builder.Services.Configure<DevicesDatabaseSettings>(
             builder.Configuration.GetSection("DevicesDatabase"));
         builder.Services.AddSingleton<IMongoClient>(sp =>
@@ -46,7 +83,10 @@ public class Program
             var settings = sp.GetService<IOptions<DevicesDatabaseSettings>>();
             return new MongoClient(settings!.Value.ConnectionString);
         });
+        builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
         builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
+        builder.Services
+            .AddSingleton<ILoggableRequestTypeInfoCacheCacheAccessor, LoggableRequestTypeInfoCacheCacheAccessor>();
 
         var app = builder.Build();
         if (app.Environment.IsDevelopment())
