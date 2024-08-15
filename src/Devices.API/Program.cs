@@ -34,7 +34,8 @@ public class Program
             .WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddSource(DiagnosticsConfig.Source.Name);
                 //TODO add listener for RabbitMQ later
                 if (otelCollectorUrl is not null)
                 {
