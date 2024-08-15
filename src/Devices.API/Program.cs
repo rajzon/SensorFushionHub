@@ -7,6 +7,8 @@ using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
 using Devices.API.Infrastructure;
+using Devices.API.Infrastructure.Telemetry;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -41,7 +43,7 @@ public class Program
             })
             .WithMetrics(metrics =>
             {
-                metrics.AddMeter("DevicesAPI")
+                metrics.AddMeter(DiagnosticsConfig.Meter.Name)
                     .AddMeter("Microsoft.AspNetCore.Hosting")
                     .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
                     .AddAspNetCoreInstrumentation()
@@ -70,6 +72,7 @@ public class Program
         });
         builder.Services.AddCarter();
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlerBehaviour<,>));
         builder.Services.Configure<DevicesDatabaseSettings>(
             builder.Configuration.GetSection("DevicesDatabase"));
         builder.Services.AddSingleton<IMongoClient>(sp =>
