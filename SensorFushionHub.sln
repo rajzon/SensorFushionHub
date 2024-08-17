@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{16F1B1
 		src\config\prometheus.yaml = src\config\prometheus.yaml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevicesMetricsGenerator", "src\DevicesMetricsGenerator\DevicesMetricsGenerator.csproj", "{7607DFA5-D36D-4BB1-95EC-725610C35C0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,9 +25,14 @@ Global
 		{F1964A58-EAD9-47CC-A165-84EEB15AA717}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1964A58-EAD9-47CC-A165-84EEB15AA717}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1964A58-EAD9-47CC-A165-84EEB15AA717}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7607DFA5-D36D-4BB1-95EC-725610C35C0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7607DFA5-D36D-4BB1-95EC-725610C35C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7607DFA5-D36D-4BB1-95EC-725610C35C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7607DFA5-D36D-4BB1-95EC-725610C35C0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1964A58-EAD9-47CC-A165-84EEB15AA717} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
 		{16F1B121-69AC-496B-ADDF-57C8896E21DF} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
+		{7607DFA5-D36D-4BB1-95EC-725610C35C0F} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
 	EndGlobalSection
 EndGlobal

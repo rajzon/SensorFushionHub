@@ -29,7 +29,7 @@ public class Program
         var builder = WebApplication.CreateSlimBuilder(args);
         builder.Host.UseSerilog((context, loggerConfig) =>
             loggerConfig.ReadFrom.Configuration(context.Configuration));
-        
+
         var otelCollectorUrl = builder.Configuration["Otel:Endpoint"];
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("Devices.API"))
@@ -58,7 +58,7 @@ public class Program
                     metrics.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
                 }
             });
-        
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
         {
@@ -91,10 +91,7 @@ public class Program
         var app = builder.Build();
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger(c =>
-            {
-                c.RouteTemplate = "swagger/{documentName}/swagger.json";
-            });
+            app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentName}/swagger.json"; });
             app.UseSwaggerUI();
         }
 
