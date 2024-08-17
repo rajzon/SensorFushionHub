@@ -14,6 +14,7 @@ internal sealed class TemperatureSimulator
         _currentTemperature = initialTemperature;
         _currentHour = initialHour;
         _currentMonth = initialMonth;
+        //TODO use different random Distribution for months?
         _normalDist = new Normal(0, 0.5); // Std deviation to simulate random fluctuations
     }
 
@@ -29,13 +30,27 @@ internal sealed class TemperatureSimulator
             case 12:
             case 1:
             case 2:
-                return new Adjustments(-0.5, dayHours ? 1 : -0.5);
+                var adjustment = new Adjustments(-0.5, dayHours ? 1 : -0.5, 0);
+                if (_currentTemperature <= -15)
+                {
+                    adjustment = adjustment with { AdditionalAdjustment = 2 };
+                }
+                return adjustment;
+            case 3:
+            case 4:
+            case 5:
+                var adjustmentSpring = new Adjustments(0, dayHours ? 1.5 : -1, 0);
+                if (_currentTemperature <= 0)
+                {
+                    adjustmentSpring = adjustmentSpring with { AdditionalAdjustment = 2 };
+                }
+                return adjustmentSpring;
             case 6:
             case 7:
             case 8:
-                return new Adjustments(1, dayHours ? 1 : -2);
+                return new Adjustments(1, dayHours ? 1 : -2, 0);
             default:
-                return new Adjustments(0, dayHours ? 1 : -2);
+                return new Adjustments(0, dayHours ? 1 : -1, 0);
         }
     }
 
@@ -50,6 +65,10 @@ internal sealed class TemperatureSimulator
             return 0;
     }
 
+    /// <summary>
+    /// Gets temperature for next hour. After each 24h takes temparature for next month
+    /// </summary>
+    /// <returns></returns>
     public double GetNextTemperature()
     {
         var baseChange = _normalDist.Sample();
@@ -57,7 +76,7 @@ internal sealed class TemperatureSimulator
         // var diurnalAdjustment = DiurnalAdjustment(_currentHour);
 
         // Adjust base change by seasonal and diurnal factors
-        double adjustedChange = baseChange + adjustment.SeasonalAdjustment + adjustment.DiurnalAdjustment;
+        double adjustedChange = baseChange + adjustment.SeasonalAdjustment + adjustment.DiurnalAdjustment + adjustment.AdditionalAdjustment;
         _currentTemperature += adjustedChange;
 
         // Update hour and month for next call (simplified, assumes each call advances one hour)
@@ -72,5 +91,5 @@ internal sealed class TemperatureSimulator
     }
 
     //Make it struct?
-    public record Adjustments(double SeasonalAdjustment, double DiurnalAdjustment);
+    public record Adjustments(double SeasonalAdjustment, double DiurnalAdjustment, double AdditionalAdjustment);
 }

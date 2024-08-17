@@ -11,15 +11,22 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        int initialHour = 10;
-        var simulator = new TemperatureSimulator(15.0, initialHour, 6);
+        int currentHour = 10;
+        int currentMonth = 6;
+        var simulator = new TemperatureSimulator(15.0, currentHour, currentMonth);
         while (!stoppingToken.IsCancellationRequested)
         {
             if (_logger.IsEnabled(LogLevel.Information))
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                _logger.LogInformation($"Temperature at hour {initialHour} : {simulator.GetNextTemperature()}");
-                initialHour = (initialHour + 1) % 24;
+                _logger.LogInformation($"Temperature at month {currentMonth}, hour {currentHour} : {simulator.GetNextTemperature()}");
+                currentHour = (currentHour + 1) % 24;
+                //every 24h move to next month
+                if (currentHour is 0)
+                {
+                    currentMonth = (currentMonth % 12) + 1;
+                }
+
             }
 
             await Task.Delay(1000, stoppingToken);
