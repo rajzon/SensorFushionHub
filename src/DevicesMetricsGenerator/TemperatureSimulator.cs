@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics.Distributions;
+﻿using DevicesMetricsGenerator.Models;
+using MathNet.Numerics.Distributions;
 
 namespace DevicesMetricsGenerator;
 
@@ -18,9 +19,8 @@ internal sealed class TemperatureSimulator
         _normalDist = new Normal(0, 0.5); // Std deviation to simulate random fluctuations
     }
 
-    private Adjustments Adjustment(int month, int hour)
+    private TemperatureAdjustment Adjustment(int month, int hour)
     {
-
         var dayHours = hour is >= 9 and <= 17;
         
         // Simplified adjustment: higher in June (6) and lower in December (12)
@@ -30,7 +30,7 @@ internal sealed class TemperatureSimulator
             case 12:
             case 1:
             case 2:
-                var adjustment = new Adjustments(-0.5, dayHours ? 1 : -0.5, 0);
+                var adjustment = new TemperatureAdjustment(-0.5, dayHours ? 1 : -0.5, 0);
                 if (_currentTemperature <= -15)
                 {
                     adjustment = adjustment with { AdditionalAdjustment = 2 };
@@ -39,7 +39,7 @@ internal sealed class TemperatureSimulator
             case 3:
             case 4:
             case 5:
-                var adjustmentSpring = new Adjustments(0, dayHours ? 1.5 : -1, 0);
+                var adjustmentSpring = new TemperatureAdjustment(0, dayHours ? 1.5 : -1, 0);
                 if (_currentTemperature <= 0)
                 {
                     adjustmentSpring = adjustmentSpring with { AdditionalAdjustment = 2 };
@@ -48,9 +48,9 @@ internal sealed class TemperatureSimulator
             case 6:
             case 7:
             case 8:
-                return new Adjustments(1, dayHours ? 1 : -2, 0);
+                return new TemperatureAdjustment(1, dayHours ? 1 : -2, 0);
             default:
-                return new Adjustments(0, dayHours ? 1 : -1, 0);
+                return new TemperatureAdjustment(0, dayHours ? 1 : -1, 0);
         }
     }
 
@@ -89,7 +89,4 @@ internal sealed class TemperatureSimulator
 
         return _currentTemperature;
     }
-
-    //Make it struct?
-    public record Adjustments(double SeasonalAdjustment, double DiurnalAdjustment, double AdditionalAdjustment);
 }

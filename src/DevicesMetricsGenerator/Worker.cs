@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace DevicesMetricsGenerator;
 
 public class Worker : BackgroundService
@@ -14,6 +16,7 @@ public class Worker : BackgroundService
         int currentHour = 10;
         int currentMonth = 6;
         var simulator = new TemperatureSimulator(15.0, currentHour, currentMonth);
+        var pollutionSimulator = new PollutionSimulator();
         while (!stoppingToken.IsCancellationRequested)
         {
             if (_logger.IsEnabled(LogLevel.Information))
@@ -26,7 +29,9 @@ public class Worker : BackgroundService
                 {
                     currentMonth = (currentMonth % 12) + 1;
                 }
-
+                var pollutionResult = pollutionSimulator.GenerateMetrics();
+                var serializedPollution = JsonSerializer.Serialize(pollutionResult);
+                _logger.LogInformation($"Current Pollution : {serializedPollution}");
             }
 
             await Task.Delay(1000, stoppingToken);
