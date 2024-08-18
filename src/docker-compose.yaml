@@ -80,3 +80,11 @@ services:
       - /:/rootfs:ro
     networks:
       - monitoring
+  
+  rabbit-mq:
+    image: rabbitmq:3.13.6-management
+    container_name: rabbit-mq
+    hostname: rabbit-mq
+    environment:
+      RABBITMQ_DEFAULT_USER: quest
+      RABBITMQ_DEFAULT_PASS: quest
