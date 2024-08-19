@@ -1,4 +1,6 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Contracts;
 using Devices.API.Core;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;
@@ -28,6 +30,9 @@ public class Program
 [JsonSerializable(typeof(ProblemDetails))]
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(MoreDetailsErrorModel))]
+[JsonSerializable(typeof(SensorCreatedEvent))]
+[JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(IEnumerable<KeyValuePair<string, object>>))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

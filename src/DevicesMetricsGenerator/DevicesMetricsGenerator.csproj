@@ -8,8 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MassTransit.MongoDb" Version="8.2.4" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.4" />
         <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
         <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
     </ItemGroup>
 </Project>

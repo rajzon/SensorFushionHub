@@ -6,6 +6,7 @@ using Devices.API.Infrastructure;
 using Devices.API.Infrastructure.Abstract;
 using Devices.API.Infrastructure.Telemetry;
 using FluentValidation;
+using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -31,6 +32,8 @@ internal static class ServiceCollectionExtensions
         services.AddCache();
         services.AddCarter();
         services.AddJsonConfiguration();
+        services.AddCustomMassTransit(configuration);
+        services.AddSingleton(TimeProvider.System);
         return services;
     }
     private static void AddCustomOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
@@ -102,6 +105,12 @@ internal static class ServiceCollectionExtensions
             var settings = sp.GetService<IOptions<DevicesDatabaseSettings>>();
             return new MongoClient(settings!.Value.ConnectionString);
         });
+        services.AddSingleton<IMongoDatabase>(sp =>
+        {
+            var settings = sp.GetService<IOptions<DevicesDatabaseSettings>>();
+            return sp.GetRequiredService<IMongoClient>()
+                .GetDatabase(settings!.Value.DatabaseName);
+        });
     }
 
     private static void AddFluentValidation(this IServiceCollection services)
@@ -125,6 +134,38 @@ internal static class ServiceCollectionExtensions
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+        });
+    }
+
+    private static void AddCustomMassTransit(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddMassTransit(busConfigurator =>
+        {
+            busConfigurator.AddMongoDbOutbox(o =>
+            {
+                o.QueryDelay = TimeSpan.FromSeconds(5);
+                o.UseBusOutbox();
+                
+                o.ClientFactory(sp => sp.GetRequiredService<IMongoClient>());
+                o.DatabaseFactory(sp => sp.GetRequiredService<IMongoDatabase>());
+            });
+            
+            busConfigurator.SetKebabCaseEndpointNameFormatter();
+            busConfigurator.UsingRabbitMq((context, configurator) =>
+            {
+                configurator.Host(new Uri(configuration["RabbitMq:Host"]!), h =>
+                {
+                    h.Username(configuration["RabbitMq:Username"]!);
+                    h.Password(configuration["RabbitMq:Username"]!);
+                });
+                configurator.ConfigureJsonSerializerOptions(options =>
+                {
+                    options.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+                    return options;
+                });
+                
+                configurator.ConfigureEndpoints(context);
+            });
         });
     }
     
