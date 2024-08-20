@@ -1,6 +1,4 @@
-﻿version: '3.8'
-
-networks:
+﻿networks:
   monitoring:
     driver: bridge
 
@@ -82,7 +80,10 @@ services:
       - monitoring
   
   rabbit-mq:
-    image: rabbitmq:3.13.6-management
+    build: 
+      context: ./config/rabbit-mq
+      dockerfile: ./Dockerfile
+    image: rabbitmq-custom
     container_name: rabbit-mq
     hostname: rabbit-mq
     ports:

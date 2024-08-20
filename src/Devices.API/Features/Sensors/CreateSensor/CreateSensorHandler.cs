@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Contracts;
+using Contracts.DevicesAPI;
 using Devices.API.Core;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Features.Sensors.CreateSensor.Models;
@@ -12,7 +13,10 @@ using MediatR;
 
 namespace Devices.API.Features.Sensors.CreateSensor;
 
-public sealed class CreateSensorHandler(ISensorRepository sensorRepository, IPublishEndpoint publishEndpoint, TimeProvider timeProvider, MongoDbContext massTransitMongoDbContext) : IRequestHandler<CreateSensorCommand, Result<CreatedSensorDto>>
+public sealed class CreateSensorHandler(ISensorRepository sensorRepository,
+    IPublishEndpoint publishEndpoint,
+    TimeProvider timeProvider,
+    MongoDbContext massTransitMongoDbContext) : IRequestHandler<CreateSensorCommand, Result<CreatedSensorDto>>
 {
     public async Task<Result<CreatedSensorDto>> Handle(CreateSensorCommand request, CancellationToken cancellationToken)
     {
@@ -24,7 +28,7 @@ public sealed class CreateSensorHandler(ISensorRepository sensorRepository, IPub
         {
             var sensor = new Sensor(request.Name);
             await sensorRepository.CreateAsync(sensor, session);
-            await publishEndpoint.Publish(new SensorCreatedEvent(sensor.Id, timeProvider.GetUtcNow().DateTime));
+            await publishEndpoint.Publish(new SensorCreatedEvent(sensor.Id, timeProvider.GetUtcNow().UtcDateTime));
 
             await session.CommitTransactionAsync(cancellationToken);
             AddCreatedSensorMetrics();

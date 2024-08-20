@@ -17,6 +17,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevicesMetricsGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "src\Contracts\Contracts.csproj", "{E1B22E29-F305-4895-8EF9-E670D572E7B4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rabbit-mq", "rabbit-mq", "{379CA6C2-290F-4176-9609-0108A1C1E3AF}"
+	ProjectSection(SolutionItems) = preProject
+		src\config\rabbit-mq\Dockerfile = src\config\rabbit-mq\Dockerfile
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,5 +46,6 @@ Global
 		{16F1B121-69AC-496B-ADDF-57C8896E21DF} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
 		{7607DFA5-D36D-4BB1-95EC-725610C35C0F} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
 		{E1B22E29-F305-4895-8EF9-E670D572E7B4} = {B784A7E5-3409-4368-9037-CCCE0EBBFE78}
+		{379CA6C2-290F-4176-9609-0108A1C1E3AF} = {16F1B121-69AC-496B-ADDF-57C8896E21DF}
 	EndGlobalSection
 EndGlobal

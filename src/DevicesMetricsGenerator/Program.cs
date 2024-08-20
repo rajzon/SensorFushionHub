@@ -48,6 +48,8 @@ builder.Services.AddMassTransit(busConfigurator =>
             h.Username(builder.Configuration["RabbitMq:Username"]!);
             h.Password(builder.Configuration["RabbitMq:Username"]!);
         });
+        configurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromMinutes(5), TimeSpan.FromSeconds(15), TimeSpan.FromMinutes(30)));
+        configurator.UseMessageRetry(r => r.Immediate(5));
         
         configurator.ConfigureEndpoints(context);
     });

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Contracts;
+using Contracts.DevicesAPI;
 using Devices.API.Core;
 using Devices.API.Features.Sensors.CreateSensor.Models;
 using Devices.API.Features.Sensors.GetSensor.Models;

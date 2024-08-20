@@ -1,4 +1,4 @@
-﻿using Contracts;
+﻿using Contracts.DevicesAPI;
 using MassTransit;
 
 namespace DevicesMetricsGenerator;
