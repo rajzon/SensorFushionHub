@@ -1,16 +1,41 @@
-﻿using DevicesMetricsGenerator.Core;
+﻿using System.Collections.Concurrent;
+using AsyncKeyedLock;
+using DevicesMetricsGenerator.Core;
 using DevicesMetricsGenerator.Infrastructure;
 
 namespace DevicesMetricsGenerator;
 
-internal sealed class SensorStoreService(ISensorRepository sensorRepository) : ISensorStoreService
+internal sealed class SensorStoreService(ISensorRepository sensorRepository, AsyncKeyedLocker<string> locker) : ISensorStoreService
 {
-    //TODO Update internal collection when SensorId will come from DevicesAPI via Rabbit
-    //TODO Consider Thread-safety
-    private List<Sensor> _sensors { get; } = [];
+    private ConcurrentBag<Sensor> _sensors { get; } = [];
     
-    public Task<List<Sensor>> GetSensors()
+    public async Task<ConcurrentBag<Sensor>> GetSensorsAsync()
     {
-        return _sensors.Count is 0 ? sensorRepository.GetAllAsync() : Task.FromResult(_sensors);
+        if (_sensors.IsEmpty)
+        {
+            await InitializeCollectionIfEmpty();
+        }
+        
+        return _sensors;
+    }
+
+    public async Task AddSensorAsync(Sensor sensor)
+    {
+        await InitializeCollectionIfEmpty();
+        await sensorRepository.CreateAsync(sensor);
+        _sensors.Add(sensor);
+    }
+
+
+    private async Task InitializeCollectionIfEmpty()
+    {
+        using (await locker.LockAsync(nameof(SensorStoreService)))
+        {
+            if (_sensors.IsEmpty)
+            {
+                var sensors = await sensorRepository.GetAllAsync();
+                sensors.ForEach(s => _sensors.Add(s));
+            }
+        }
     }
 }

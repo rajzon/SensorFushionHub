@@ -1,3 +1,4 @@
+using AsyncKeyedLock;
 using DevicesMetricsGenerator;
 using DevicesMetricsGenerator.Infrastructure;
 using MassTransit;
@@ -22,12 +23,14 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 });
 builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
 builder.Services.AddSingleton<ISensorStoreService, SensorStoreService>();
+builder.Services.AddSingleton<AsyncKeyedLocker<string>>();
 
 builder.Services.AddMassTransit(busConfigurator =>
 {
     busConfigurator.AddMongoDbOutbox(o =>
     {
         o.QueryDelay = TimeSpan.FromSeconds(5);
+        o.DuplicateDetectionWindow = TimeSpan.FromSeconds(30);
         o.UseBusOutbox();
                 
         o.ClientFactory(sp => sp.GetRequiredService<IMongoClient>());
@@ -48,7 +51,12 @@ builder.Services.AddMassTransit(busConfigurator =>
             h.Username(builder.Configuration["RabbitMq:Username"]!);
             h.Password(builder.Configuration["RabbitMq:Username"]!);
         });
-        configurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromMinutes(5), TimeSpan.FromSeconds(15), TimeSpan.FromMinutes(30)));
+        configurator.UseDelayedRedelivery(r => r.Intervals(
+            TimeSpan.FromMinutes(5),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromMinutes(30),
+            TimeSpan.FromMinutes(60))
+        );
         configurator.UseMessageRetry(r => r.Immediate(5));
         
         configurator.ConfigureEndpoints(context);

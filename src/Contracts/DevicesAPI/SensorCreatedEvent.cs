@@ -1,3 +1,3 @@
 ﻿namespace Contracts.DevicesAPI;
 
-public sealed record SensorCreatedEvent(string SensorId, DateTime CreatedDate);
+public sealed record SensorCreatedEvent(string SensorId);

@@ -7,7 +7,7 @@ public sealed class Sensor
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; }
+    public string Id { get; init; }
 
     public string SensorId { get; private set; }
 

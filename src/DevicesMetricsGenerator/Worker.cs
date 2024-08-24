@@ -15,7 +15,7 @@ public class Worker(ILogger<Worker> logger, ISensorStoreService sensorStoreServi
             if (logger.IsEnabled(LogLevel.Information))
             {
                 logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                var sensors = await sensorStoreService.GetSensors();
+                var sensors = await sensorStoreService.GetSensorsAsync();
                 var temperature = simulator.GetNextTemperature();
                 foreach (var sensor in sensors)
                 {

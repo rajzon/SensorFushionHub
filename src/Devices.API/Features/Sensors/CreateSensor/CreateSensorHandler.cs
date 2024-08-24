@@ -26,9 +26,9 @@ public sealed class CreateSensorHandler(ISensorRepository sensorRepository,
         
         try
         {
-            var sensor = new Sensor(request.Name);
+            var sensor = new Sensor(request.Name, timeProvider.GetUtcNow().UtcDateTime);
             await sensorRepository.CreateAsync(sensor, session);
-            await publishEndpoint.Publish(new SensorCreatedEvent(sensor.Id, timeProvider.GetUtcNow().UtcDateTime));
+            await publishEndpoint.Publish(new SensorCreatedEvent(sensor.Id));
 
             await session.CommitTransactionAsync(cancellationToken);
             AddCreatedSensorMetrics();
