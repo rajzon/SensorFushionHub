@@ -24,6 +24,7 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 builder.Services.AddSingleton<ISensorRepository, SensorRepository>();
 builder.Services.AddSingleton<ISensorStoreService, SensorStoreService>();
 builder.Services.AddSingleton<AsyncKeyedLocker<string>>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddMassTransit(busConfigurator =>
 {

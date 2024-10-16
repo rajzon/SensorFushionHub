@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{16F1B1
 	ProjectSection(SolutionItems) = preProject
 		src\config\otel-collector-config.yaml = src\config\otel-collector-config.yaml
 		src\config\prometheus.yaml = src\config\prometheus.yaml
+		src\config\redis-stack.conf = src\config\redis-stack.conf
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevicesMetricsGenerator", "src\DevicesMetricsGenerator\DevicesMetricsGenerator.csproj", "{7607DFA5-D36D-4BB1-95EC-725610C35C0F}"

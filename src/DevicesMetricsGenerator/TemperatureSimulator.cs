@@ -1,4 +1,5 @@
-﻿using DevicesMetricsGenerator.Models;
+﻿using Contracts.DevicesMetricsGenerator;
+using DevicesMetricsGenerator.Models;
 using MathNet.Numerics.Distributions;
 
 namespace DevicesMetricsGenerator;
@@ -6,15 +7,17 @@ namespace DevicesMetricsGenerator;
 internal sealed class TemperatureSimulator
 {
     private readonly Normal _normalDist;
+    private readonly TimeProvider _timeProvider;
     private double _currentTemperature;
     private int _currentHour; // 24-hour format
     private int _currentMonth; // 1 to 12
 
-    public TemperatureSimulator(double initialTemperature, int initialHour, int initialMonth)
+    public TemperatureSimulator(double initialTemperature, int initialHour, int initialMonth, TimeProvider timeProvider)
     {
         _currentTemperature = initialTemperature;
         _currentHour = initialHour;
         _currentMonth = initialMonth;
+        _timeProvider = timeProvider;
         //TODO use different random Distribution for months?
         _normalDist = new Normal(0, 0.5); // Std deviation to simulate random fluctuations
     }
@@ -69,7 +72,7 @@ internal sealed class TemperatureSimulator
     /// Gets temperature for next hour. After each 24h takes temparature for next month
     /// </summary>
     /// <returns></returns>
-    public double GetNextTemperature()
+    public SensorMetric GetNextTemperature()
     {
         var baseChange = _normalDist.Sample();
         var adjustment = Adjustment(_currentMonth, _currentHour);
@@ -87,6 +90,6 @@ internal sealed class TemperatureSimulator
             _currentMonth = (_currentMonth % 12) + 1;
         }
 
-        return _currentTemperature;
+        return new SensorMetric(SensorType.Temperature, _timeProvider.GetUtcNow().UtcDateTime,  _currentTemperature);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Carter;
+using Devices.API.Consumers;
 using Devices.API.Features.Sensors;
 using Devices.API.Features.Sensors.Abstract;
 using Devices.API.Infrastructure;
@@ -14,6 +15,7 @@ using MongoDB.Driver;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using StackExchange.Redis;
 
 namespace Devices.API.Startup;
 
@@ -34,6 +36,7 @@ internal static class ServiceCollectionExtensions
         services.AddJsonConfiguration();
         services.AddCustomMassTransit(configuration);
         services.AddSingleton(TimeProvider.System);
+        services.AddRedis(configuration);
         return services;
     }
     private static void AddCustomOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
@@ -121,6 +124,7 @@ internal static class ServiceCollectionExtensions
     private static void AddRepositories(this IServiceCollection services)
     {
         services.AddSingleton<ISensorRepository, SensorRepository>();
+        services.AddSingleton<IMetricRepository, MetricRepository>();
     }
 
     private static void AddCache(this IServiceCollection services)
@@ -151,6 +155,7 @@ internal static class ServiceCollectionExtensions
             });
             
             busConfigurator.SetKebabCaseEndpointNameFormatter();
+            busConfigurator.AddConsumer<SensorAddedMetricsEventConsumer>();
             busConfigurator.UsingRabbitMq((context, configurator) =>
             {
                 configurator.Host(new Uri(configuration["RabbitMq:Host"]!), h =>
@@ -163,9 +168,25 @@ internal static class ServiceCollectionExtensions
                     options.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
                     return options;
                 });
+                configurator.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromMinutes(5),
+                    TimeSpan.FromSeconds(15),
+                    TimeSpan.FromMinutes(30),
+                    TimeSpan.FromMinutes(60))
+                );
+                configurator.UseMessageRetry(r => r.Immediate(5));
                 
                 configurator.ConfigureEndpoints(context);
             });
+        });
+    }
+
+    private static void AddRedis(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var redisConnectionMultiplexer = ConnectionMultiplexer.Connect(configuration["Redis:ConnectionString"]!);
+            return redisConnectionMultiplexer;
         });
     }
     
