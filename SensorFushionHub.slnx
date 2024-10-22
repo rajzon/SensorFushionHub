@@ -1,0 +1,16 @@
+﻿<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\Contracts\Contracts.csproj" Type="Classic C#" />
+    <Project Path="src\Devices.API\Devices.API.csproj" Type="Classic C#" />
+    <Project Path="src\DevicesMetricsGenerator\DevicesMetricsGenerator.csproj" Type="Classic C#" />
+    <File Path="src\docker-compose.yaml" />
+  </Folder>
+  <Folder Name="/src/config/">
+    <File Path="src\config\otel-collector-config.yaml" />
+    <File Path="src\config\prometheus.yaml" />
+    <File Path="src\config\redis-stack.conf" />
+  </Folder>
+  <Folder Name="/src/config/rabbit-mq/">
+    <File Path="src\config\rabbit-mq\Dockerfile" />
+  </Folder>
+</Solution>

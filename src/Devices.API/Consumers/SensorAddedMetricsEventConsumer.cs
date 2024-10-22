@@ -67,6 +67,7 @@ public class MetricRepository(IConnectionMultiplexer redis) : IMetricRepository
 //TODO move to Core
 public record TsSensorMetric
 {
+    //TODO needed KeyPrefix?
     public string KeyPrefix { get; }
     public string Key { get; }
     public DateTime CreatedDate { get; }
