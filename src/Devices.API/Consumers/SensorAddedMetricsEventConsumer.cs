@@ -1,4 +1,6 @@
-﻿using Contracts.DevicesMetricsGenerator;
+﻿using System.Diagnostics;
+using Contracts.DevicesMetricsGenerator;
+using Devices.API.Infrastructure.Telemetry;
 using MassTransit;
 using NRedisStack;
 using NRedisStack.DataTypes;
@@ -13,6 +15,7 @@ public sealed class SensorAddedMetricsEventConsumer(
 {
     public async Task Consume(ConsumeContext<SensorAddedMetricsEvent> context)
     {
+        using var activity = StartActivity(context.Message);
         //TODO add traces and metrics
         //This logs probably not needed if i will add Traces from MassTransit
         logger.LogInformation($"{nameof(SensorAddedMetricsEventConsumer)} started");
@@ -27,7 +30,35 @@ public sealed class SensorAddedMetricsEventConsumer(
             }
         }
         await metricRepository.AddAsync(tsToAdd);
+        AddSensorMetricsCreated(context.Message);
         logger.LogInformation($"{nameof(SensorAddedMetricsEventConsumer)} consumed");
+    }
+    
+    private static Activity? StartActivity(SensorAddedMetricsEvent message)
+    {
+        return DiagnosticsConfig.Source.StartActivityWithTags(DiagnosticsNames.AddSensorMetric,
+            new List<KeyValuePair<string, object?>>
+            {
+                new(DiagnosticsNames.SensorId, message.SensorId),
+                //IMPORTANT ToList is required in order to treat each individual element in array as a value
+                new(DiagnosticsNames.MetricType, string.Join(',', message.Metrics.Select(m => m.Type))),
+            });
+    }
+    
+    private static void AddSensorMetricsCreated(SensorAddedMetricsEvent message)
+    {
+        //TODO count globally how many metrics there are
+        //TODO count globally how many metrics there are with distinguish between type - ex. 4 PM2_5, 1 PM10 etc.
+        //TODO count Metrics per SensorId - add label for SensorId
+        //TODO count Metrics per SensorId per Type - add label for SensorId and Type
+        //TODO In Dashboard show info about current numbers(card) and histogram
+        message.Metrics.ForEach(m =>
+        {
+            //TODO use multiple tags or create multiple metrics like CreatedMetrics per SensorId etc.
+            DiagnosticsConfig.CreatedMetrics.Record(1, new TagList { { DiagnosticsNames.SensorId, message.SensorId }, { DiagnosticsNames.MetricType, m.Type } });
+            DiagnosticsConfig.CreatedMetricsCount.Add(1, new TagList { { DiagnosticsNames.SensorId, message.SensorId }, { DiagnosticsNames.MetricType, m.Type } });
+        });
+        
     }
 }
 
@@ -73,21 +104,21 @@ public record TsSensorMetric
     public DateTime CreatedDate { get; }
     public double Value { get; }
     
-    public TsSensorMetric(string sensorId, SensorType sensorType, DateTime createdDate, double value)
+    public TsSensorMetric(string sensorId, MetricType metricType, DateTime createdDate, double value)
     {
         Validate(createdDate);
         
         CreatedDate = createdDate;
         Value = value;
-        KeyPrefix = sensorType switch
+        KeyPrefix = metricType switch
         {
-            SensorType.Temperature => "temperature",
-            SensorType.Co2 => "co2",
-            SensorType.No2 => "no2",
-            SensorType.Pm10 => "pm10",
-            SensorType.Pm2_5 => "pm2_5",
-            SensorType.O3 => "o3",
-            _ => throw new Exception($"Unknown type: {sensorType}")
+            MetricType.Temperature => "temperature",
+            MetricType.Co2 => "co2",
+            MetricType.No2 => "no2",
+            MetricType.Pm10 => "pm10",
+            MetricType.Pm2_5 => "pm2_5",
+            MetricType.O3 => "o3",
+            _ => throw new Exception($"Unknown type: {metricType}")
         };
 
         Key = $"{KeyPrefix}:{sensorId}";

@@ -1,4 +1,5 @@
-﻿using AsyncKeyedLock;
+﻿using System.Text;
+using AsyncKeyedLock;
 using DevicesMetricsGenerator.Infrastructure;
 using DevicesMetricsGenerator.Infrastructure.Telemetry;
 using MassTransit;
@@ -31,6 +32,7 @@ internal static class ServiceCollectionExtensions
     private static void AddCustomOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
         var otelCollectorUrl = configuration["Otel:Endpoint"];
+        var auth64 = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{configuration["Otel:Username"]}:{configuration["Otel:Password"]}"));
         services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("DevicesMetricsGenerator"))
             .WithTracing(tracing =>
@@ -41,7 +43,11 @@ internal static class ServiceCollectionExtensions
                     .AddSource(DiagnosticHeaders.DefaultListenerName);
                 if (otelCollectorUrl is not null)
                 {
-                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                    tracing.AddOtlpExporter(s =>
+                    {
+                        s.Endpoint = new Uri(otelCollectorUrl);
+                        s.Headers = "Authorization=Basic " + auth64;
+                    });
                 }
             })
             .WithMetrics(metrics =>
@@ -56,7 +62,11 @@ internal static class ServiceCollectionExtensions
 
                 if (otelCollectorUrl is not null)
                 {
-                    metrics.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                    metrics.AddOtlpExporter(s =>
+                    {
+                        s.Endpoint = new Uri(otelCollectorUrl);
+                        s.Headers = "Authorization=Basic " + auth64;
+                    });
                 }
             });
     }

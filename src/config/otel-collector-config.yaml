@@ -3,6 +3,8 @@
     protocols:
       grpc:
         endpoint: otel-collector:4317
+        auth:
+          authenticator: basicauth/server
 
 exporters:
   prometheus:
@@ -21,9 +23,20 @@ extensions:
     endpoint: otel-collector:13133
   pprof:
   zpages:
+  basicauth/server:
+    htpasswd:
+# cen get htpasswd from file or inline
+      file: .htpasswd
+#      inline: |
+#        username:$apr1$n138soid$y00YonELOPCeBlFgZAV6Y1
+# only one can be active at a time client or server
+#  basicauth/client:
+#    client_auth:
+#      username: username
+#      password: password
 
 service:
-  extensions: [health_check, pprof, zpages]
+  extensions: [health_check, pprof, zpages, basicauth/server]
   pipelines:
     metrics:
       receivers: [otlp]

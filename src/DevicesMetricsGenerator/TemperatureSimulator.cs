@@ -90,6 +90,6 @@ internal sealed class TemperatureSimulator
             _currentMonth = (_currentMonth % 12) + 1;
         }
 
-        return new SensorMetric(SensorType.Temperature, _timeProvider.GetUtcNow().UtcDateTime,  _currentTemperature);
+        return new SensorMetric(MetricType.Temperature, _timeProvider.GetUtcNow().UtcDateTime,  _currentTemperature);
     }
 }

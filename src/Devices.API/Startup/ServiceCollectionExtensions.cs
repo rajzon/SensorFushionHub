@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Carter;
 using Devices.API.Consumers;
 using Devices.API.Features.Sensors;
@@ -44,6 +45,7 @@ internal static class ServiceCollectionExtensions
     private static void AddCustomOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
         var otelCollectorUrl = configuration["Otel:Endpoint"];
+        var auth64 = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{configuration["Otel:Username"]}:{configuration["Otel:Password"]}"));
         services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("Devices.API"))
             .WithTracing(( tracing) =>
@@ -52,11 +54,15 @@ internal static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddSource(DiagnosticsConfig.Source.Name)
                     .AddSource(DiagnosticHeaders.DefaultListenerName)
-                    .AddRedisInstrumentation(opt => opt.Fl);
+                    .AddRedisInstrumentation();
                 //TODO add listener for RabbitMQ later
                 if (otelCollectorUrl is not null)
                 {
-                    tracing.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                    tracing.AddOtlpExporter(s =>
+                    {
+                        s.Endpoint = new Uri(otelCollectorUrl);
+                        s.Headers = "Authorization=Basic " + auth64;
+                    });
                 }
             })
             .WithMetrics(metrics =>
@@ -71,7 +77,11 @@ internal static class ServiceCollectionExtensions
 
                 if (otelCollectorUrl is not null)
                 {
-                    metrics.AddOtlpExporter(s => s.Endpoint = new Uri(otelCollectorUrl));
+                    metrics.AddOtlpExporter(s =>
+                    {
+                        s.Endpoint = new Uri(otelCollectorUrl);
+                        s.Headers = "Authorization=Basic " + auth64;
+                    });
                 }
             });
     }
