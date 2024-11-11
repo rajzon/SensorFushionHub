@@ -9,6 +9,8 @@
 exporters:
   prometheus:
     endpoint: otel-collector:8889
+#    resource_to_telemetry_conversion: # needed in order to make possible to pass custom attributes as labels in ConfigureResource() for metrics 
+#      enabled: true
     
   otlp/jaeger:
     endpoint: sensor-fushion-hub-jaeger:4317

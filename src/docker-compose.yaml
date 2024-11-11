@@ -34,6 +34,7 @@ services:
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./config/.htpasswd:/.htpasswd
+      - //var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8888:8888" # Prometheus metrics exposed by the Collector
       - "8889:8889" # Prometheus exporter metrics

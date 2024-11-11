@@ -36,7 +36,7 @@ public class Worker(ILogger<Worker> logger,
                         
                         sensorMetrics.AddRange(pollutionMetrics);
                         await bus.Publish(new SensorAddedMetricsEvent(sensor.SensorId, sensorMetrics), stoppingToken);
-                        await Task.Delay(100000);
+                        await Task.Delay(50_000);
                     }
 
                     currentHour = (currentHour + 1) % 24;

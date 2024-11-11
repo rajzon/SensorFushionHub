@@ -9,7 +9,7 @@ scrape_configs:
     static_configs:
       - targets: ['node_exporter:9100']
   - job_name: 'otel-collector'
-    scrape_interval: 5s
+    scrape_interval: 5s # this overrides global scrape_inteval
     static_configs:
       - targets: ['otel-collector:8889']
       - targets: ['otel-collector:8888']
