@@ -3,10 +3,14 @@
     protocols:
       grpc:
         endpoint: otel-collector:4317
+        auth:
+          authenticator: basicauth/server
 
 exporters:
   prometheus:
     endpoint: otel-collector:8889
+#    resource_to_telemetry_conversion: # needed in order to make possible to pass custom attributes as labels in ConfigureResource() for metrics 
+#      enabled: true
     
   otlp/jaeger:
     endpoint: sensor-fushion-hub-jaeger:4317
@@ -19,9 +23,22 @@ processors:
 extensions:
   health_check:
     endpoint: otel-collector:13133
+  pprof:
+  zpages:
+  basicauth/server:
+    htpasswd:
+# cen get htpasswd from file or inline
+      file: .htpasswd
+#      inline: |
+#        username:$apr1$n138soid$y00YonELOPCeBlFgZAV6Y1
+# only one can be active at a time client or server
+#  basicauth/client:
+#    client_auth:
+#      username: username
+#      password: password
 
 service:
-  extensions: [health_check]
+  extensions: [health_check, pprof, zpages, basicauth/server]
   pipelines:
     metrics:
       receivers: [otlp]

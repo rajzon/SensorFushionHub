@@ -1,6 +1,4 @@
-﻿version: '3.8'
-
-networks:
+﻿networks:
   monitoring:
     driver: bridge
 
@@ -31,15 +29,19 @@ services:
       
       
   otel-collector:
-    image: otel/opentelemetry-collector:0.95.0
+    image: otel/opentelemetry-collector-contrib:0.111.0
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./config/.htpasswd:/.htpasswd
+      - //var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "8888:8888"
-      - "8889:8889"
-      - "13133:13133"
-      - "4317:4317"
+      - "8888:8888" # Prometheus metrics exposed by the Collector
+      - "8889:8889" # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317" # OTLP gRPC receiver
+      - "55679:55679" # zpages extension
+      - "1888:1888" # pprof extension
     networks:
       - monitoring
         
@@ -80,3 +82,28 @@ services:
       - /:/rootfs:ro
     networks:
       - monitoring
+  
+  rabbit-mq:
+    build: 
+      context: ./config/rabbit-mq
+      dockerfile: ./Dockerfile
+    image: rabbitmq-custom
+    container_name: rabbit-mq
+    hostname: rabbit-mq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      
+  redis:
+    image: redis/redis-stack:7.4.0-v0
+    container_name: redis
+    ports:
+      - '6379:6379'
+    command: ["/entrypoint.sh", "./redis-stack.conf"]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    volumes:
+      - ./config/volumes/redis_data:/data

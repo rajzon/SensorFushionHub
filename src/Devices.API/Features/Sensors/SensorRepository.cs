@@ -16,8 +16,8 @@ internal sealed class SensorRepository : ISensorRepository
         _sensorsCollection = database.GetCollection<Sensor>(options.Value.SensorsCollectionName);
     }
     
-    public Task CreateAsync(Sensor sensor) =>
-        _sensorsCollection.InsertOneAsync(sensor);
+    public Task CreateAsync(Sensor sensor, IClientSessionHandle session) =>
+        _sensorsCollection.InsertOneAsync(session, sensor);
     
     public Task<List<Sensor>> GetAllAsync() =>
         _sensorsCollection.Find(_ => true).ToListAsync();

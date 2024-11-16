@@ -11,9 +11,10 @@ internal static class ApiUtilities
         {
             if (result.HasError<NotFoundResultError>())
             {
-                return Results.Problem(statusCode: (int)HttpStatusCode.NotFound, detail: SetDetailMessage(result), extensions: SetMoreDetails(result));
+                return Results.Problem(statusCode: (int)HttpStatusCode.NotFound, detail: SetDetailMessage(result),
+                    extensions: SetMoreDetails(result));
             }
-                
+
             return Results.Problem(detail: SetDetailMessage(result), extensions: SetMoreDetails(result));
         }
 
@@ -21,7 +22,7 @@ internal static class ApiUtilities
         {
             return Results.Created(createdRoute, result.Value);
         }
-        
+
         return Results.Ok(result.Value);
     }
 
@@ -36,7 +37,7 @@ internal static class ApiUtilities
             .Where(m => m.ContainsKey(FluentResultsExtensions.MoreDetailsMetadataKey))
             .Select(m => m[FluentResultsExtensions.MoreDetailsMetadataKey])
             .ToArray();
-        
+
         return moreDetails.Length > 0 ? new Dictionary<string, object?>() { { "moreDetails", moreDetails } } : null;
     }
 }
