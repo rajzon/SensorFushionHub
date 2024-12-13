@@ -1,4 +1,5 @@
 ﻿using Carter;
+using Scalar.AspNetCore;
 using Serilog;
 
 namespace Devices.API.Startup;
@@ -9,8 +10,11 @@ internal static class WebApplicationExtensions
     {
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentName}/swagger.json"; });
-            app.UseSwaggerUI();
+            app.MapOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            });
         }
 
         if (app.Environment.IsProduction())

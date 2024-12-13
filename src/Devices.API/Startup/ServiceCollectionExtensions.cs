@@ -27,8 +27,8 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddStartupServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddCustomOpenTelemetry(configuration);
-        services.AddCustomProblemDetails();
-        services.AddCustomSwagger();
+        services.AddProblemDetails();
+        services.AddOpenApi();
         services.ConfigureOptions(configuration);
         services.AddCustomMediatR();
         services.AddMongoDb();
@@ -55,7 +55,6 @@ internal static class ServiceCollectionExtensions
                     .AddSource(DiagnosticsConfig.Source.Name)
                     .AddSource(DiagnosticHeaders.DefaultListenerName)
                     .AddRedisInstrumentation();
-                //TODO add listener for RabbitMQ later
                 if (otelCollectorUrl is not null)
                 {
                     tracing.AddOtlpExporter(s =>
@@ -84,24 +83,6 @@ internal static class ServiceCollectionExtensions
                     });
                 }
             });
-    }
-    
-    private static void AddCustomProblemDetails(this IServiceCollection services)
-    {
-        services.AddProblemDetails(po => po.CustomizeProblemDetails = pc =>
-        {
-            //TODO Remove when upgraded to .NET 9 https://github.com/dotnet/aspnetcore/pull/54478#issuecomment-2007571828
-            pc.ProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? pc.HttpContext.TraceIdentifier);
-        });
-    }
-
-    private static void AddCustomSwagger(this IServiceCollection services)
-    {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Devices.API", Version = "v1" });
-        });
     }
     
     private static void ConfigureOptions(this IServiceCollection services, IConfiguration configuration)
