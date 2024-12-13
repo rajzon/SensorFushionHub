@@ -25,7 +25,7 @@ public sealed class SensorEndpoints : ICarterModule
         group.MapGet("/", async (IMediator mediator) 
             => ApiUtilities.HandleResult(await mediator.Send(new GetSensorsQuery())))
                 .Produces<List<SensorDto>>();
-        
+        dasdada
         group.MapGet("/{id}", async ([AsParameters] GetSensorQuery query, IMediator mediator) 
             => ApiUtilities.HandleResult( await mediator.Send(query)))
                 .AddEndpointFilter<ValidationFilter<GetSensorQuery>>()
