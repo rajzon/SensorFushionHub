@@ -55,7 +55,6 @@ internal static class ServiceCollectionExtensions
                     .AddSource(DiagnosticsConfig.Source.Name)
                     .AddSource(DiagnosticHeaders.DefaultListenerName)
                     .AddRedisInstrumentation();
-                //TODO add listener for RabbitMQ later
                 if (otelCollectorUrl is not null)
                 {
                     tracing.AddOtlpExporter(s =>
