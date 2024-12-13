@@ -20,18 +20,15 @@ public sealed class SensorEndpoints : ICarterModule
         {
             var result = await mediator.Send(command);
             return ApiUtilities.HandleResult(result, createdRoute: $"{BaseUrl}/{result.Value?.Id}");
-        }).WithOpenApi()
-            .Produces<CreatedSensorDto>((int)HttpStatusCode.Created);
+        }).Produces<CreatedSensorDto>((int)HttpStatusCode.Created);;
         
         group.MapGet("/", async (IMediator mediator) 
             => ApiUtilities.HandleResult(await mediator.Send(new GetSensorsQuery())))
-                .WithOpenApi()
                 .Produces<List<SensorDto>>();
         
         group.MapGet("/{id}", async ([AsParameters] GetSensorQuery query, IMediator mediator) 
             => ApiUtilities.HandleResult( await mediator.Send(query)))
                 .AddEndpointFilter<ValidationFilter<GetSensorQuery>>()
-                .WithOpenApi()
                 .Produces<SensorDto>();
     }
 }
